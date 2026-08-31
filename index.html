@@ -2,28 +2,59 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OBS PANEL</title>
+<title>OBS PANEL PRO</title>
+
 <style>
-body{background:#111;color:white;font-family:Arial;margin:0;padding:20px}
-input,button{width:100%;padding:10px;margin:5px 0;background:#222;color:white;border:none}
-.item{padding:8px;background:#222;margin:5px 0;cursor:pointer}
+body{background:#0f0f0f;color:white;font-family:Arial;margin:0;padding:20px}
+
+input,button{
+width:100%;
+padding:10px;
+margin:5px 0;
+background:#222;
+color:white;
+border:none;
+}
+
+.item{
+padding:8px;
+background:#222;
+margin:5px 0;
+cursor:pointer;
+}
+
+#bar{
+width:100%;
+height:20px;
+background:#333;
+margin-top:10px;
+}
+
+#progress{
+height:20px;
+width:0%;
+background:lime;
+transition:0.2s;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🎛 OBS PANEL</h2>
+<h2>🎛 OBS PANEL PRO</h2>
 
-<h3>📤 Video Upload</h3>
+<h3>📤 Upload Video</h3>
 <input type="file" id="file">
 <button onclick="upload()">UPLOAD</button>
+
+<div id="bar"><div id="progress"></div></div>
 
 <hr>
 
 <h3>🎥 Playlist</h3>
-<input id="video" placeholder="video URL veya uploads/video.mp4">
-<button onclick="add()">EKLE</button>
 
+<input id="video" placeholder="uploads/video.mp4">
+<button onclick="add()">EKLE</button>
 <button onclick="send()">YAYINA GÖNDER</button>
 
 <div id="list"></div>
@@ -33,43 +64,59 @@ input,button{width:100%;padding:10px;margin:5px 0;background:#222;color:white;bo
 let playlist=[];
 
 function render(){
-  let l=document.getElementById("list");
-  l.innerHTML="";
-  playlist.forEach((v,i)=>{
-    let d=document.createElement("div");
-    d.className="item";
-    d.innerText=v;
-    d.onclick=()=>{playlist.splice(i,1);render();}
-    l.appendChild(d);
-  });
+let l=document.getElementById("list");
+l.innerHTML="";
+
+playlist.forEach((v,i)=>{
+let d=document.createElement("div");
+d.className="item";
+d.innerText=v;
+d.onclick=()=>{playlist.splice(i,1);render();}
+l.appendChild(d);
+});
 }
 
 function add(){
-  let v=document.getElementById("video").value;
-  playlist.push(v);
-  render();
+let v=document.getElementById("video").value;
+playlist.push(v);
+render();
 }
 
 function send(){
-fetch("http://akrepyayin.site.je/save.php", {
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({playlist})
+
+fetch("http://akrepyayin.site.je/save.php",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({playlist})
 });
+
 alert("Yayın güncellendi");
 }
 
 function upload(){
+
 let file=document.getElementById("file").files[0];
 let form=new FormData();
 form.append("file",file);
 
-fetch("http://akrepyayin.site.je/upload.php",{
-method:"POST",
-body:form
-}).then(r=>r.text()).then(d=>{
-alert("Yüklendi: uploads/"+file.name);
-});
+let xhr=new XMLHttpRequest();
+
+xhr.open("POST","http://akrepyayin.site.je/upload.php");
+
+xhr.upload.onprogress=function(e){
+if(e.lengthComputable){
+let p=(e.loaded/e.total)*100;
+document.getElementById("progress").style.width=p+"%";
+}
+};
+
+xhr.onload=function(){
+alert("Yükleme tamamlandı!");
+document.getElementById("progress").style.width="0%";
+render();
+};
+
+xhr.send(form);
 }
 
 </script>
