@@ -5,9 +5,44 @@
 <title>OBS PANEL PRO</title>
 
 <style>
-body{background:#0f0f0f;color:white;font-family:Arial;margin:0;padding:20px}
+body{
+margin:0;
+background:#0b0b0b;
+color:#fff;
+font-family:Arial;
+}
 
-input,button{
+/* TOP BAR */
+.top{
+padding:15px;
+background:#151515;
+font-size:18px;
+font-weight:bold;
+}
+
+/* LAYOUT */
+.container{
+display:flex;
+height:calc(100vh - 50px);
+}
+
+/* LEFT */
+.left{
+width:320px;
+background:#111;
+padding:15px;
+box-sizing:border-box;
+}
+
+/* RIGHT */
+.right{
+flex:1;
+background:#0d0d0d;
+padding:15px;
+}
+
+/* BUTTONS */
+button,input{
 width:100%;
 padding:10px;
 margin:5px 0;
@@ -16,38 +51,62 @@ color:white;
 border:none;
 }
 
+/* ITEMS */
 .item{
-padding:8px;
-background:#222;
+padding:10px;
+background:#1c1c1c;
 margin:5px 0;
 cursor:pointer;
+border-left:3px solid #00ff88;
 }
 
-#bar{
-width:100%;
-height:20px;
+/* PROGRESS SCREEN */
+#uploadScreen{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.85);
+display:none;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+}
+
+.bar{
+width:80%;
+height:25px;
 background:#333;
-margin-top:10px;
+margin-top:20px;
+border-radius:5px;
+overflow:hidden;
 }
 
-#progress{
-height:20px;
+.fill{
+height:100%;
 width:0%;
-background:lime;
+background:#00ff88;
 transition:0.2s;
+}
+
+#status{
+margin-top:10px;
+color:#aaa;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🎛 OBS PANEL PRO</h2>
+<div class="top">🎛 OBS PANEL PRO</div>
 
-<h3>📤 Upload Video</h3>
+<div class="container">
+
+<!-- LEFT -->
+<div class="left">
+
+<h3>📤 Upload</h3>
 <input type="file" id="file">
 <button onclick="upload()">UPLOAD</button>
-
-<div id="bar"><div id="progress"></div></div>
 
 <hr>
 
@@ -58,6 +117,27 @@ transition:0.2s;
 <button onclick="send()">YAYINA GÖNDER</button>
 
 <div id="list"></div>
+
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+<h3>📺 Preview (dummy)</h3>
+<p>Buraya sonra stream preview eklenir</p>
+</div>
+
+</div>
+
+<!-- UPLOAD SCREEN -->
+<div id="uploadScreen">
+<h2>📤 Uploading...</h2>
+
+<div class="bar">
+<div class="fill" id="fill"></div>
+</div>
+
+<div id="status">0%</div>
+</div>
 
 <script>
 
@@ -78,12 +158,12 @@ l.appendChild(d);
 
 function add(){
 let v=document.getElementById("video").value;
+if(!v) return;
 playlist.push(v);
 render();
 }
 
 function send(){
-
 fetch("http://akrepyayin.site.je/save.php",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -93,9 +173,14 @@ body:JSON.stringify({playlist})
 alert("Yayın güncellendi");
 }
 
+/* UPLOAD SYSTEM */
 function upload(){
 
 let file=document.getElementById("file").files[0];
+if(!file) return;
+
+document.getElementById("uploadScreen").style.display="flex";
+
 let form=new FormData();
 form.append("file",file);
 
@@ -105,15 +190,22 @@ xhr.open("POST","http://akrepyayin.site.je/upload.php");
 
 xhr.upload.onprogress=function(e){
 if(e.lengthComputable){
-let p=(e.loaded/e.total)*100;
-document.getElementById("progress").style.width=p+"%";
+let p=Math.floor((e.loaded/e.total)*100);
+document.getElementById("fill").style.width=p+"%";
+document.getElementById("status").innerText=p+"%";
 }
 };
 
 xhr.onload=function(){
-alert("Yükleme tamamlandı!");
-document.getElementById("progress").style.width="0%";
-render();
+document.getElementById("status").innerText="DONE ✔";
+setTimeout(()=>{
+document.getElementById("uploadScreen").style.display="none";
+document.getElementById("fill").style.width="0%";
+},800);
+};
+
+xhr.onerror=function(){
+document.getElementById("status").innerText="ERROR ❌";
 };
 
 xhr.send(form);
