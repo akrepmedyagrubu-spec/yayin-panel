@@ -8,25 +8,21 @@
 body{
 margin:0;
 background:#0b0b0b;
-color:#fff;
+color:white;
 font-family:Arial;
 }
 
-/* TOP BAR */
 .top{
 padding:15px;
 background:#151515;
-font-size:18px;
 font-weight:bold;
 }
 
-/* LAYOUT */
 .container{
 display:flex;
 height:calc(100vh - 50px);
 }
 
-/* LEFT */
 .left{
 width:320px;
 background:#111;
@@ -34,15 +30,13 @@ padding:15px;
 box-sizing:border-box;
 }
 
-/* RIGHT */
 .right{
 flex:1;
-background:#0d0d0d;
 padding:15px;
+background:#0d0d0d;
 }
 
-/* BUTTONS */
-button,input{
+input,button{
 width:100%;
 padding:10px;
 margin:5px 0;
@@ -51,46 +45,31 @@ color:white;
 border:none;
 }
 
-/* ITEMS */
 .item{
-padding:10px;
+padding:8px;
 background:#1c1c1c;
 margin:5px 0;
 cursor:pointer;
 border-left:3px solid #00ff88;
 }
 
-/* PROGRESS SCREEN */
-#uploadScreen{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,0.85);
-display:none;
-align-items:center;
-justify-content:center;
-flex-direction:column;
+#uploadBox{
+margin-top:15px;
+padding:10px;
+background:#1a1a1a;
 }
 
-.bar{
-width:80%;
-height:25px;
+#progressBar{
+width:100%;
+height:18px;
 background:#333;
-margin-top:20px;
-border-radius:5px;
-overflow:hidden;
+margin-top:10px;
 }
 
-.fill{
+#progressFill{
 height:100%;
 width:0%;
 background:#00ff88;
-transition:0.2s;
-}
-
-#status{
-margin-top:10px;
-color:#aaa;
 }
 </style>
 </head>
@@ -104,9 +83,16 @@ color:#aaa;
 <!-- LEFT -->
 <div class="left">
 
-<h3>📤 Upload</h3>
+<h3>📤 Upload Video</h3>
 <input type="file" id="file">
 <button onclick="upload()">UPLOAD</button>
+
+<div id="uploadBox">
+<div id="progressBar">
+<div id="progressFill"></div>
+</div>
+<p id="status">Hazır</p>
+</div>
 
 <hr>
 
@@ -122,21 +108,10 @@ color:#aaa;
 
 <!-- RIGHT -->
 <div class="right">
-<h3>📺 Preview (dummy)</h3>
-<p>Buraya sonra stream preview eklenir</p>
+<h3>📺 Preview</h3>
+<p>Stream preview sonra eklenecek</p>
 </div>
 
-</div>
-
-<!-- UPLOAD SCREEN -->
-<div id="uploadScreen">
-<h2>📤 Uploading...</h2>
-
-<div class="bar">
-<div class="fill" id="fill"></div>
-</div>
-
-<div id="status">0%</div>
 </div>
 
 <script>
@@ -173,39 +148,43 @@ body:JSON.stringify({playlist})
 alert("Yayın güncellendi");
 }
 
-/* UPLOAD SYSTEM */
+/* ================= UPLOAD ================= */
+
 function upload(){
 
 let file=document.getElementById("file").files[0];
-if(!file) return;
-
-document.getElementById("uploadScreen").style.display="flex";
+if(!file){
+alert("Dosya seç");
+return;
+}
 
 let form=new FormData();
 form.append("file",file);
 
 let xhr=new XMLHttpRequest();
 
-xhr.open("POST","https://akrepyayin.site.je/upload.php");
+xhr.open("POST","https://akrepyayin.site.je/upload.php",true);
 
 xhr.upload.onprogress=function(e){
 if(e.lengthComputable){
-let p=Math.floor((e.loaded/e.total)*100);
-document.getElementById("fill").style.width=p+"%";
-document.getElementById("status").innerText=p+"%";
+let p=(e.loaded/e.total)*100;
+document.getElementById("progressFill").style.width=p+"%";
+document.getElementById("status").innerText=Math.floor(p)+"%";
 }
 };
 
 xhr.onload=function(){
-document.getElementById("status").innerText="DONE ✔";
-setTimeout(()=>{
-document.getElementById("uploadScreen").style.display="none";
-document.getElementById("fill").style.width="0%";
-},800);
+console.log(xhr.responseText);
+
+if(xhr.status>=200 && xhr.status<300){
+document.getElementById("status").innerText="UPLOAD OK ✔";
+}else{
+document.getElementById("status").innerText="FAIL ❌";
+}
 };
 
 xhr.onerror=function(){
-document.getElementById("status").innerText="ERROR ❌";
+document.getElementById("status").innerText="NETWORK ERROR ❌";
 };
 
 xhr.send(form);
