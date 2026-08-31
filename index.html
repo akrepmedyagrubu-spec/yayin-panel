@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OBS PANEL</title>
+
+<style>
+body {margin:0;background:#0f0f0f;color:white;font-family:Arial;}
+.container {display:flex;height:100vh;}
+.sidebar {width:300px;background:#1a1a1a;padding:10px;}
+#canvas {flex:1;position:relative;background:black;}
+
+.item {position:absolute;border:2px dashed white;cursor:move;}
+
+input,textarea,button{
+width:100%;margin:5px 0;padding:8px;background:#222;color:white;border:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="sidebar">
+<h3>🎛 OBS PANEL</h3>
+
+<input id="video" placeholder="video url">
+<button onclick="setVideo()">🎥 VIDEO SET</button>
+
+<input id="img" placeholder="png url">
+<button onclick="addImage()">🖼 RESİM EKLE</button>
+
+<textarea id="text" placeholder="YAZI"></textarea>
+<button onclick="addText()">🧾 YAZI EKLE</button>
+
+<button onclick="exportScene()">💾 EXPORT</button>
+</div>
+
+<div id="canvas"></div>
+
+</div>
+
+<script>
+
+let canvas = document.getElementById("canvas");
+let elements = [];
+let videoURL = "";
+
+function drag(el){
+let offsetX=0,offsetY=0,isDown=false;
+
+el.onmousedown = e=>{
+isDown=true;
+offsetX=e.offsetX;
+offsetY=e.offsetY;
+};
+
+document.onmouseup=()=>isDown=false;
+
+document.onmousemove=e=>{
+if(!isDown) return;
+el.style.left=(e.pageX-offsetX)+"px";
+el.style.top=(e.pageY-offsetY)+"px";
+};
+}
+
+function setVideo(){
+videoURL = document.getElementById("video").value;
+alert("Video ayarlandı");
+}
+
+function addImage(){
+let url=document.getElementById("img").value;
+
+let div=document.createElement("div");
+div.className="item";
+div.style.left="50px";
+div.style.top="50px";
+
+let img=document.createElement("img");
+img.src=url;
+img.style.width="200px";
+
+div.appendChild(img);
+canvas.appendChild(div);
+
+drag(div);
+
+elements.push({type:"image",src:url,x:50,y:50});
+}
+
+function addText(){
+let txt=document.getElementById("text").value;
+
+let div=document.createElement("div");
+div.className="item";
+div.style.left="100px";
+div.style.top="100px";
+div.innerText=txt;
+
+canvas.appendChild(div);
+
+drag(div);
+
+elements.push({type:"text",text:txt,x:100,y:100});
+}
+
+function exportScene(){
+
+let data={
+video:videoURL,
+elements:elements
+};
+
+console.log(JSON.stringify(data));
+alert("Console'dan JSON'u kopyala!");
+}
+
+</script>
+
+</body>
+</html>
