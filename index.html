@@ -2,37 +2,31 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OBS PANEL PRO</title>
-
+<title>OBS PANEL</title>
 <style>
-body{margin:0;background:#0f0f0f;color:white;font-family:Arial;}
-.container{display:flex;height:100vh;}
-.sidebar{width:320px;background:#1a1a1a;padding:10px;}
-#list div{padding:8px;background:#222;margin:5px;cursor:pointer;}
-input,button{width:100%;padding:10px;margin:5px 0;background:#222;color:white;border:none;}
+body{background:#111;color:white;font-family:Arial;margin:0;padding:20px}
+input,button{width:100%;padding:10px;margin:5px 0;background:#222;color:white;border:none}
+.item{padding:8px;background:#222;margin:5px 0;cursor:pointer}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<h2>🎛 OBS PANEL</h2>
 
-<div class="sidebar">
-<h3>🎛 OBS PANEL</h3>
+<h3>📤 Video Upload</h3>
+<input type="file" id="file">
+<button onclick="upload()">UPLOAD</button>
 
-<input id="video" placeholder="video.mp4 veya url">
-<button onclick="add()">➕ EKLE</button>
+<hr>
 
-<button onclick="send()">🚀 YAYINA GÖNDER</button>
+<h3>🎥 Playlist</h3>
+<input id="video" placeholder="video URL veya uploads/video.mp4">
+<button onclick="add()">EKLE</button>
+
+<button onclick="send()">YAYINA GÖNDER</button>
 
 <div id="list"></div>
-</div>
-
-<div style="flex:1;background:black;">
-<h3 style="padding:10px;">LIVE PREVIEW (dummy)</h3>
-</div>
-
-</div>
 
 <script>
 
@@ -43,6 +37,7 @@ function render(){
   l.innerHTML="";
   playlist.forEach((v,i)=>{
     let d=document.createElement("div");
+    d.className="item";
     d.innerText=v;
     d.onclick=()=>{playlist.splice(i,1);render();}
     l.appendChild(d);
@@ -51,20 +46,30 @@ function render(){
 
 function add(){
   let v=document.getElementById("video").value;
-  if(!v) return;
   playlist.push(v);
   render();
 }
 
 function send(){
-
-fetch("akrepyayin.site.je/save.php", {
+fetch("http://akrepyayin.site.je/save.php", {
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body:JSON.stringify({playlist})
 });
-
 alert("Yayın güncellendi");
+}
+
+function upload(){
+let file=document.getElementById("file").files[0];
+let form=new FormData();
+form.append("file",file);
+
+fetch("http://akrepyayin.site.je/upload.php",{
+method:"POST",
+body:form
+}).then(r=>r.text()).then(d=>{
+alert("Yüklendi: uploads/"+file.name);
+});
 }
 
 </script>
